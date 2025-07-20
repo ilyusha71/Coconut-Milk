@@ -40,7 +40,7 @@ if "%video_url%"=="" (
     goto AskVideo
 )
 
-:: 反覆詢問音訊網址
+:: 反覆詢問音?網址
 :AskAudio
 set /p audio_url=請輸入音頻 URL: 
 if "%audio_url%"=="" (
@@ -68,13 +68,23 @@ if /i "%use_ref%"=="Y" (
     set "ref=--referer=https://www.bilibili.com/"
 )
 
+:: 產生唯一暫存文件?名稱（title + uuid）
+for /f %%a in ('powershell -command "[guid]::NewGuid().ToString()"') do set "folder_uuid=%%a"
+set "temp_dir=%title%_%folder_uuid%"
+if not exist "%temp_dir%" mkdir "%temp_dir%"
+
 :: 產生暫存檔 UUID
 for /f %%a in ('powershell -command "[guid]::NewGuid().ToString()"') do set v_uuid=%%a
 for /f %%a in ('powershell -command "[guid]::NewGuid().ToString()"') do set a_uuid=%%a
 
+:: 建立輸出文件?
+set "output_dir=Download"
+if not exist "%output_dir%" mkdir "%output_dir%"
+set "output_path=%output_dir%\%title%.mp4"
+
 :: 下載視頻
 echo 正在下載視頻...
-aria2c -x 16 -s 10 -c -o %v_uuid%.m4s %ref% "%video_url%"
+aria2c -x 16 -s 10 -c -o "%temp_dir%\%v_uuid%.m4s" %ref% "%video_url%"
 if errorlevel 1 (
     echo 視頻下載失敗！
     pause
@@ -83,7 +93,7 @@ if errorlevel 1 (
 
 :: 下載音頻
 echo 正在下載音頻...
-aria2c -x 16 -s 10 -c -o %a_uuid%.m4s %ref% "%audio_url%"
+aria2c -x 16 -s 10 -c -o "%temp_dir%\%a_uuid%.m4s" %ref% "%audio_url%"
 if errorlevel 1 (
     echo 音頻下載失敗！
     pause
@@ -92,18 +102,21 @@ if errorlevel 1 (
 
 :: 合併
 echo 正在合併視頻與音頻...
-ffmpeg -i %v_uuid%.m4s -i %a_uuid%.m4s -c copy "%title%.mp4" -y
+ffmpeg -i "%temp_dir%\%v_uuid%.m4s" -i "%temp_dir%\%a_uuid%.m4s" -c copy "%output_path%" -y
 if errorlevel 1 (
     echo 合併失敗！
     pause
     exit /b
 )
 
-:: 刪除暫存文件（安全）
-if defined v_uuid if exist "%v_uuid%.m4s" del /f /q "%v_uuid%.m4s"
-if defined a_uuid if exist "%a_uuid%.m4s" del /f /q "%a_uuid%.m4s"
+:: 刪除暫存文件與文件?（安全）
+if defined v_uuid if exist "%temp_dir%\%v_uuid%.m4s" del /f /q "%temp_dir%\%v_uuid%.m4s"
+if defined a_uuid if exist "%temp_dir%\%a_uuid%.m4s" del /f /q "%temp_dir%\%a_uuid%.m4s"
+echo %temp_dir% | findstr /i "%title%_" >nul && (
+    if exist "%temp_dir%\" rd /s /q "%temp_dir%"
+)
 
-echo 完成！輸出文件為：%title%.mp4
+echo 完成！輸出文件為：%output_path%
 
 :: 播放提示音
 powershell -c "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify Calendar.wav').PlaySync()"
