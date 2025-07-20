@@ -12,6 +12,13 @@ for /f "tokens=1 delims=." %%a in ("%~t0") do (
 set "rawdate=!rawdate:/=-!"
 set "batdate=!rawdate:~2,2!-!rawdate:~5,2!-!rawdate:~8,2!"
 
+:: 檢查 ffmpeg
+where ffmpeg >nul 2>&1 || (
+    echo 錯誤：請先安裝 ffmpeg
+    pause
+    exit /b
+)
+
 if not "%~2"=="" (
     set "file1=%~1"
     set "file2=%~2"
@@ -22,8 +29,7 @@ if not "%~2"=="" (
 echo ========================================
 echo 視頻比對工具
 echo 更新日期: !batdate!
-echo 作者: 163	QQ: 2294147601)
-echo 請將「視頻文件」拖入此窗口或輸入路徑。
+echo 作者: 163	QQ: 2294147601
 echo ========================================
 echo.
 set /p "file1=請拖入第一個文件或輸入路徑："
@@ -67,14 +73,13 @@ echo [2] !file2!
 for /f %%A in ('powershell -NoProfile -Command "[math]::Round((Get-Item -LiteralPath '%file1%').Length / 1MB, 2)"') do set "mb1=%%A"
 for /f %%A in ('powershell -NoProfile -Command "[math]::Round((Get-Item -LiteralPath '%file2%').Length / 1MB, 2)"') do set "mb2=%%A"
 
-:: 封裝容器分類
-:: 取得 file1 副檔名
+:: 取得 file1 擴展名
 for %%A in ("!file1!") do set "ext1=%%~xA"
 for %%A in ("!file2!") do set "ext2=%%~xA"
 
+:: 封裝容器分類
 call :GetMainFormat "!fmt1_full!" "!brand1!" "!ext1!" fmt1
 call :GetMainFormat "!fmt2_full!" "!brand2!" "!ext2!" fmt2
-
 
 :: 時長計算
 call :FormatTime !dur1! fdur1
@@ -343,17 +348,6 @@ if "!den!"=="0" set "den=1"
 for /f %%f in ('powershell -NoProfile -Command "[math]::Round(%num% / %den%, 3)"') do set "fps=%%f"
 endlocal & set "%2=%fps% fps"
 goto :eof
-
-
-
-
-
-
-
-
-
-
-
 
 
 
