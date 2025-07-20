@@ -116,7 +116,7 @@ call :GetBitrateFromRaw "!abr2!" "!dur2!" "!file2!" kabr2
 
 :: ================= 顯示結果 =================
 echo.
-echo ========================== 比對結果 ==========================
+echo =============================== 比 對 結 果 ==================
 call :printLine "大小　　　　　" "!mb1! MB" "!mb2! MB"
 call :printLine "封裝格式　　　" "!fmt1!" "!fmt2!"
 call :printLine "時長　　　　　" "!fdur1!" "!fdur2!"
