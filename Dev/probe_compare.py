@@ -1,4 +1,3 @@
-# v1.09 稳定版本 2025-07-21 1735#
 import subprocess
 import json
 import sys
