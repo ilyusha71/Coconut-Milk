@@ -9,12 +9,6 @@ for /f "tokens=1 delims=." %%a in ("%~t0") do (
 set "rawdate=!rawdate:/=-!"
 set "batdate=!rawdate:~2,2!-!rawdate:~5,2!-!rawdate:~8,2!"
 
-if not "%~2"=="" (
-    set "file1=%~1"
-    set "file2=%~2"
-    goto :process_files
-)
-
 REM Check if two files were dragged in 檢查是否拖入兩個檔案
 if "%~2"=="" (
     echo Please drag both video and audio files onto this batch file.
